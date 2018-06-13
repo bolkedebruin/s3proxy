@@ -198,6 +198,8 @@ public class S3ProxyHandler {
     private BlobStoreLocator blobStoreLocator;
     // TODO: hack to allow per-request anonymous access
     private final BlobStore defaultBlobStore;
+    private final S3Authorizer s3Authorizer;
+
     /**
      * S3 supports arbitrary keys for the marker while some blobstores only
      * support opaque markers.  Emulate the common case for these by mapping
@@ -249,6 +251,9 @@ public class S3ProxyHandler {
         xmlOutputFactory.setProperty("javax.xml.stream.isRepairingNamespaces",
                 Boolean.FALSE);
         this.servicePath = Strings.nullToEmpty(servicePath);
+
+        // todo: make configurable
+        this.s3Authorizer = new RangerS3Authorizer();
     }
 
     private static String getBlobStoreType(BlobStore blobStore) {
@@ -626,6 +631,12 @@ public class S3ProxyHandler {
             }
         }
 
+        // Validate access
+        if (!s3Authorizer.isAccessAllowed(path[1], method,
+          requestIdentity, request.getRemoteAddr())) {
+            throw new S3Exception(S3ErrorCode.ACCESS_DENIED);
+        }
+
         String uploadId = request.getParameter("uploadId");
         switch (method) {
         case "DELETE":
@@ -757,6 +768,11 @@ public class S3ProxyHandler {
             throws IOException, S3Exception {
         String method = request.getMethod();
         String[] path = uri.split("/", 3);
+
+        if (!s3Authorizer.isAccessAllowed(uri, method, null, request.getRemoteAddr())) {
+            throw new S3Exception(S3ErrorCode.ACCESS_DENIED);
+        }
+
         switch (method) {
         case "GET":
             if (uri.equals("/")) {
