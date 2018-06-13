@@ -1,5 +1,13 @@
-S3Proxy
-=======
+S3Proxy with Apache Ranger integration
+======================================
+
+Installation
+------------
+Build as usual. Make sure to have a running Apache Ranger 1+.
+
+1. Copy `s3proxy-1.6.1-SNAPSHOT-jar-with-dependencies.jar` to `${RANGER_HOME}/ews/webapp/WEB-INF/classes/ranger-plugins/s3` (Note: the location is important)
+2. Load the service definition by `curl -u <admin>:<admin> -d "@s3-ranger.json" -X POST -H "Accept: application/json" -H "Content-Type: application/json" http://{RANGER_HOST}:{RANGER_PORT}/service/public/v2/api/servicedef`
+3. Configure the service in Ranger
 
 [![Github All Releases](https://img.shields.io/github/downloads/gaul/s3proxy/total.svg)](https://github.com/gaul/s3proxy/releases/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/andrewgaul/s3proxy.svg)](https://hub.docker.com/r/andrewgaul/s3proxy/)
